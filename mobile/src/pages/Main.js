@@ -16,15 +16,12 @@ import MapView, { Marker, Callout } from "react-native-maps";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 import api from "../services/api";
+import { connect, disconnect, subscribeToNewDevs } from "../services/socket";
 
 export default function Main({ navigation }) {
   const [currentRegion, setCurrentRegion] = useState(null);
   const [devs, setDevs] = useState([]);
   const [techs, setTechs] = useState("");
-
-  function handleRegionChange(region) {
-    setCurrentRegion(region);
-  }
 
   useEffect(() => {
     async function loadDevsInitial() {
@@ -35,16 +32,6 @@ export default function Main({ navigation }) {
 
     loadDevsInitial();
   }, []);
-
-  async function loadDevs() {
-    const { latitude, longitude } = currentRegion;
-
-    const res = await api.get("/search", {
-      params: { latitude, longitude, techs }
-    });
-
-    setDevs(res.data);
-  }
 
   useEffect(() => {
     async function loadInitialLocation() {
@@ -65,6 +52,32 @@ export default function Main({ navigation }) {
 
     loadInitialLocation();
   }, []);
+
+  useEffect(() => {
+    subscribeToNewDevs(dev => setDevs([...devs, dev]));
+  }, [devs]);
+
+  function handleRegionChange(region) {
+    setCurrentRegion(region);
+  }
+
+  function setupWebSockets() {
+    disconnect();
+
+    const { latitude, longitude } = currentRegion;
+    connect(latitude, longitude, techs);
+  }
+
+  async function loadDevs() {
+    const { latitude, longitude } = currentRegion;
+
+    const res = await api.get("/search", {
+      params: { latitude, longitude, techs }
+    });
+
+    setDevs(res.data);
+    setupWebSockets();
+  }
 
   if (!currentRegion) return null;
   return (

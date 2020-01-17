@@ -2,6 +2,8 @@ const Dev = require("../models/Dev");
 const axios = require("axios");
 const parseStringAsArray = require("../utils/parseStringAsArray");
 
+const { findConnections, sendMessage } = require("../websockets");
+
 module.exports = {
   async index(req, res) {
     const devs = await Dev.find();
@@ -38,6 +40,14 @@ module.exports = {
         techs: techsArray,
         location
       });
+
+      const sendToSocketMessage = findConnections(
+        { latitude, longitude },
+        techsArray
+      );
+
+      sendMessage(sendToSocketMessage, "new-dev", dev);
+
       return res.json(dev);
     } else {
       return res.status(400).json({ message: "User already exists" });
