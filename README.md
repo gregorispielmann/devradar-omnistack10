@@ -78,8 +78,8 @@ This will start backend in dev mode
 
 <div style="display: flex;">
 
-<img src="screenshots/screenshot1.png" width="50%">
-<img src="screenshots/screenshot2.png" width="50%">
+<img src="screenshots/screenshot1.png" >
+<img src="screenshots/screenshot2.png" >
 
 </div>
 
